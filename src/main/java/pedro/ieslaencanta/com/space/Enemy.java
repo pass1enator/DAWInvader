@@ -26,8 +26,49 @@ public class Enemy {
     private static int max_paint_counter = 35;
     private static int max_animation_cicle = 250;
     private int paint_counter = 0;
-    private int animation =250;
+    private int animation = 250;
     private boolean animate = false;
+    private EnemyType enemytype;
+
+    public enum EnemyType {
+        A,
+        B,
+        C,
+        D
+    }
+    private static String cartoon[][] = {
+        {
+            "⢀⡴⣿⢦⡀ ",
+            "⢈⢝⠭⡫⡁ "
+        },
+        {
+            "⢀⡴⣿⢦⡀ ",
+            "⠨⡋⠛⢙⠅ "
+        },
+        {
+            "⢀⡵⣤⡴⣅ ",
+            "⠏⢟⡛⣛⠏⠇",
+            "      "
+
+        },
+        {
+            "⣆⡵⣤⡴⣅⡆",
+            "⢘⠟⠛⠛⢟⠀"
+        },
+        {
+            "⣴⡶⢿⡿⢶⣦",
+            "⠩⣟⠫⠝⣻⠍"
+        },
+        {
+            "⣴⡶⢿⡿⢶⣦",
+            "⣉⠽⠫⠝⠯⣉"
+        },
+        {
+            "⢀⡴⣾⢿⡿⣷⢦⡀",
+            "⠉⠻⠋⠙⠋⠙⠟⠉"
+        }
+
+    };
 
     public Enemy() {
         this.position = new Point2D();
@@ -43,15 +84,17 @@ public class Enemy {
         this.position = new Point2D(x, y);
         this.init();
     }
-    public void initAnimationTime(int i){
-        this.animation=i;
-    }
 
+    public void initAnimationTime(int i) {
+        this.animation = i;
+    }
+    public void setEnemyType(EnemyType e){
+        this.enemytype=e;
+    }
     public static int getMax_animation_cicle() {
         return max_animation_cicle;
     }
 
-  
     private void init() {
         this.color = TextColor.ANSI.GREEN;
         this.backgroundcolor = TextColor.ANSI.BLACK;
@@ -99,17 +142,49 @@ public class Enemy {
      * @param s
      */
     public void paint(Screen s) {
-       
+        int enemy_index;
 
         //para activar la animacion y los disparos
         if (this.animation >= Enemy.getMax_animation_cicle()) {
             this.animate = !this.animate;
             this.animation = 0;
 
-           
         }
-         this.paintOne(s);
-         this.animation++;
+        if (this.enemytype == EnemyType.A) {
+            if (this.animate) {
+                enemy_index = 0;
+            } else {
+                enemy_index = 1;
+            }
+        } else if (this.enemytype == EnemyType.B) {
+
+            if (this.animate) {
+                enemy_index = 2;
+            } else {
+                enemy_index = 3;
+            }
+
+        } else if (this.enemytype == EnemyType.C) {
+
+            if (this.animate) {
+                enemy_index = 4;
+            } else {
+                enemy_index = 5;
+            }
+
+        } else {
+            enemy_index = 6;
+
+        }
+        for (int i = 0; i < this.cartoon[enemy_index].length; i++) {
+            for (int j = -this.cartoon[enemy_index][i].length() / 2; j < this.cartoon[enemy_index][i].length() - this.cartoon[enemy_index][i].length() / 2; j++) {
+                s.setCharacter(this.position.getX() + j,
+                        this.position.getY() + i,
+                        new TextCharacter(this.cartoon[enemy_index][i].charAt(j + this.cartoon[enemy_index][i].length() / 2),
+                                color, this.backgroundcolor));
+            }
+        }
+        this.animation++;
         for (int i = 0; i < this.bullets.length; i++) {
             if (this.bullets[i] != null) {
                 this.bullets[i].paint(s);

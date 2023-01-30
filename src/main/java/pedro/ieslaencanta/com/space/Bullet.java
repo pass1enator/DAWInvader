@@ -59,7 +59,7 @@ public class Bullet {
         }
     }
     public void paint(Screen s) {
-        s.setCharacter(this.getPosition().getX(), this.getPosition().getY(), new TextCharacter(' ', color, this.backgroundcolor));
+        s.setCharacter(this.getPosition().getX(), this.getPosition().getY(), new TextCharacter('⣿', color, this.backgroundcolor));
 
     }
 }

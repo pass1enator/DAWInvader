@@ -25,6 +25,10 @@ public class Ship {
     //por la frecuencia
     private static int max_paint_counter = 35;
     private int paint_counter = 0;
+    private String cartoon[] = {
+        "⢀⣀⣾⣿⣷⣀⡀",
+        "⣿⣿⣿⣿⣿⣿⣿"
+    };
 
     public Ship() {
         this.position = new Point2D();
@@ -74,29 +78,17 @@ public class Ship {
         }
     }
 
-    /**
-     * Dibuja ^ _/ \_ !#####!
-     *
-     * @param s
-     */
     public void paint(Screen s) {
-
-        s.setCharacter(this.position.getX(), this.position.getY() - 1, new TextCharacter('^', color, this.backgroundcolor));
-        //_/ \_ 
-        s.setCharacter(this.position.getX() - 2, this.position.getY(), new TextCharacter('_', color, this.backgroundcolor));
-        s.setCharacter(this.position.getX() - 1, this.position.getY(), new TextCharacter('/', color, this.backgroundcolor));
-        s.setCharacter(this.position.getX(), this.position.getY(), new TextCharacter(' ', color, this.backgroundcolor));
-        s.setCharacter(this.position.getX() + 1, this.position.getY(), new TextCharacter('\\', color, this.backgroundcolor));
-        s.setCharacter(this.position.getX() + 2, this.position.getY(), new TextCharacter('_', color, this.backgroundcolor));
-
-        // !#####!
-        s.setCharacter(this.position.getX() - 3, this.position.getY() + 1, new TextCharacter('|', color, this.backgroundcolor));
-        s.setCharacter(this.position.getX() - 2, this.position.getY() + 1, new TextCharacter('#', color, this.backgroundcolor));
-        s.setCharacter(this.position.getX() - 1, this.position.getY() + 1, new TextCharacter('#', color, this.backgroundcolor));
-        s.setCharacter(this.position.getX(), this.position.getY() + 1, new TextCharacter('#', color, this.backgroundcolor));
-        s.setCharacter(this.position.getX() + 3, this.position.getY() + 1, new TextCharacter('|', color, this.backgroundcolor));
-        s.setCharacter(this.position.getX() + 2, this.position.getY() + 1, new TextCharacter('#', color, this.backgroundcolor));
-        s.setCharacter(this.position.getX() + 1, this.position.getY() + 1, new TextCharacter('#', color, this.backgroundcolor));
+        //se pinta la matriz
+        for (int i = 0; i < this.cartoon.length; i++) {
+            for (int j = -this.cartoon[i].length() / 2; j < this.cartoon[i].length() - this.cartoon[i].length() / 2; j++) {
+                s.setCharacter(this.position.getX() + j,
+                        this.position.getY() + i,
+                        new TextCharacter(this.cartoon[i].charAt(j + this.cartoon[i].length() / 2),
+                                color, this.backgroundcolor));
+            }
+        }
+        //se pintan las balas
         for (int i = 0; i < this.bullets.length; i++) {
             if (this.bullets[i] != null) {
                 this.bullets[i].paint(s);
@@ -110,7 +102,7 @@ public class Ship {
         //solo  dispara si tiene un disparo libre
         for (int i = 0; i < this.bullets.length && !shooted; i++) {
             if (this.bullets[i] == null) {
-                tempo = new Bullet(this.position.getX(), this.position.getY() - 2);
+                tempo = new Bullet(this.position.getX(), this.position.getY());
                 this.bullets[i] = tempo;
                 shooted = true;
             }

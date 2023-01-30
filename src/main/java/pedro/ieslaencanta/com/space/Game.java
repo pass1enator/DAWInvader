@@ -17,10 +17,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
+
 /**
  *
  * @author Pedro
@@ -62,17 +59,23 @@ public class Game {
     }
 
     public void init() {
-        int incx = 8;
-        int incy = 5;
+        int incx = 9;
+        int incy = 4;
         int x = 10;
-        int y = 2;
+        int y = 1;
         int aleatorio;
-        this.enemies = new Enemy[3][8];
+        Random PRNG = new Random();
+        this.enemies = new Enemy[4][8];
+        Enemy.EnemyType tipo_enemigo;
+        Enemy.EnemyType[] enemytypes = Enemy.EnemyType.values();
         for (int i = 0; i < this.enemies.length; i++) {
+            //tipo de enemigo igual para toda la fila de forma aleatoria
+            tipo_enemigo= enemytypes[PRNG.nextInt(enemytypes.length)];
             aleatorio= (int) (Math.random()*Enemy.getMax_animation_cicle());
             for (int j = 0; j < this.enemies[i].length; j++) {
                 this.enemies[i][j] = new Enemy(new Point2D( x + j * incx,y));
                 this.enemies[i][j].initAnimationTime(aleatorio);
+                this.enemies[i][j].setEnemyType(tipo_enemigo);
             }
             y = y + incy;
 
