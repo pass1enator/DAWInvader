@@ -17,7 +17,6 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 /**
  *
  * @author Pedro
@@ -38,6 +37,7 @@ public class Game {
     private boolean key_shoot;
     private Ship ship;
     private Enemy enemies[][];
+    private Wall walls[];
 
     public Game() {
         this.key_left_pressed = false;
@@ -59,6 +59,28 @@ public class Game {
     }
 
     public void init() {
+        this.initEnemies();
+        this.initWalls();
+    }
+
+    private void initWalls() {
+        int incx = 18;
+
+        int x = 10;
+        int y = 18;
+
+        this.walls = new Wall[4];
+        //se inicializan los enemigos
+        for (int i = 0; i < this.walls.length; i++) {
+            //tipo de enemigo igual para toda la fila de forma aleatoria
+
+            this.walls[i] = new Wall(new Point2D(x + i * incx, y));
+
+        }
+
+    }
+
+    private void initEnemies() {
         int incx = 9;
         int incy = 4;
         int x = 10;
@@ -68,14 +90,16 @@ public class Game {
         this.enemies = new Enemy[4][8];
         Enemy.EnemyType tipo_enemigo;
         Enemy.EnemyType[] enemytypes = Enemy.EnemyType.values();
+        //se inicializan los enemigos
         for (int i = 0; i < this.enemies.length; i++) {
             //tipo de enemigo igual para toda la fila de forma aleatoria
-            tipo_enemigo= enemytypes[PRNG.nextInt(enemytypes.length)];
-            aleatorio= (int) (Math.random()*Enemy.getMax_animation_cicle());
+            tipo_enemigo = enemytypes[PRNG.nextInt(enemytypes.length)];
+            aleatorio = (int) (Math.random() * Enemy.getMax_animation_cicle());
             for (int j = 0; j < this.enemies[i].length; j++) {
-                this.enemies[i][j] = new Enemy(new Point2D( x + j * incx,y));
-                this.enemies[i][j].initAnimationTime(aleatorio);
+                this.enemies[i][j] = new Enemy(new Point2D(x + j * incx, y));
                 this.enemies[i][j].setEnemyType(tipo_enemigo);
+                this.enemies[i][j].init();
+                this.enemies[i][j].initAnimationTime(aleatorio);
             }
             y = y + incy;
 
@@ -121,6 +145,15 @@ public class Game {
         }
     }
 
+    private void paintWalls(Screen s) {
+        for (int i = 0; i < this.walls.length; i++) {
+            if (this.walls[i] != null) {
+                this.walls[i].paint(s);
+            }
+
+        }
+    }
+
     private void paint(Screen s) {
         try {
             TerminalSize terminalSize = s.getTerminalSize();
@@ -134,6 +167,7 @@ public class Game {
                 }
             }
             this.paintEnemies(s);
+            this.paintWalls(s);
             this.ship.paint(s);
             screen.refresh();
         } catch (IOException ex) {
@@ -167,18 +201,20 @@ public class Game {
             if (keyStroke != null) {
                 if (keyStroke.getKeyType() == KeyType.Escape) {
                     this.key_exit = true;
-                }
-                if (keyStroke.getKeyType() == KeyType.ArrowLeft) {
+                } else if (keyStroke.getKeyType() == KeyType.ArrowLeft) {
                     this.key_left_pressed = true;
-                }
-                if (keyStroke.getKeyType() == KeyType.ArrowRight) {
+                } else if (keyStroke.getKeyType() == KeyType.ArrowRight) {
                     this.key_right_pressed = true;
-                }
-                if (keyStroke.getKeyType() == KeyType.Enter) {
-                    this.key_shoot = true;
+                } else {
+                    KeyType c = keyStroke.getKeyType();
+
+                    // System.out.println(String.format("%2x", (int) c.toString().charAt(0))+" ....");
+                    if ((int) c.toString().charAt(0) == 67) {
+                        this.key_shoot = true;
+                    }
                 }
                 //se borra el buffer
-                this.clear_keyboard_input();
+                //this.clear_keyboard_input();
             }
 
         } catch (IOException ex) {
@@ -200,8 +236,19 @@ public class Game {
         if (this.key_shoot) {
             this.ship.shoot();
         }
+        this.eval_colisions();
+        
     }
-
+    public boolean eval_colisions(){
+        for(int i=0;i<this.walls.length;i++){
+            for(int j=0;j<this.ship.getBullets().length;j++){
+                 if(this.walls[i].colision(this.ship.getBullets()[j]))
+                     this.ship.getBullets()[j]=null;
+                 
+            }
+        }
+        return true;
+    }
     public boolean isKey_left_pressed() {
         return key_left_pressed;
     }

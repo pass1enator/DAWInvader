@@ -18,8 +18,7 @@ public class Ship {
     private Point2D position;
     private TextColor color;
     private TextColor backgroundcolor;
-    private int width = 7;
-    private int height = 4;
+  
     private static int bullets_size = 2;
     private Bullet[] bullets;
     //por la frecuencia
@@ -48,12 +47,20 @@ public class Ship {
     private void init() {
         this.color = TextColor.ANSI.GREEN;
         this.backgroundcolor = TextColor.ANSI.BLACK;
-        this.bullets = new Bullet[Ship.bullets_size];
+        this.setBullets(new Bullet[Ship.bullets_size]);
 
     }
 
+    public Bullet[] getBullets() {
+        return bullets;
+    }
+
+    public void setBullets(Bullet[] bullets) {
+        this.bullets = bullets;
+    }
+
     public void moveHorizontal(int intx, int min_x, int max_x) {
-        if (this.position.getX() + intx - this.width / 2 >= min_x && this.position.getX() + intx + this.width / 2 < max_x) {
+        if (this.position.getX() + intx - this.cartoon[0].length() / 2 >= min_x && this.position.getX() + intx + this.cartoon[0].length() / 2 <= max_x) {
             this.position.addX(intx);
         } else {
             Toolkit.getDefaultToolkit().beep();
@@ -66,12 +73,12 @@ public class Ship {
         if (this.paint_counter >= Ship.max_paint_counter) {
             this.paint_counter = 0;
 
-            for (int i = 0; i < this.bullets.length; i++) {
-                if (this.bullets[i] != null) {
-                    this.bullets[i].moveVertical(-1, min_y, max_y);
+            for (int i = 0; i < this.getBullets().length; i++) {
+                if (this.getBullets()[i] != null) {
+                    this.getBullets()[i].moveVertical(-1, min_y, max_y);
                     //en caso de llegar a la parte superior se elimina
-                    if (this.bullets[i].getPosition().getY() <= min_y) {
-                        this.bullets[i] = null;
+                    if (this.getBullets()[i].getPosition().getY() <= min_y) {
+                        this.getBullets()[i] = null;
                     }
                 }
             }
@@ -89,9 +96,9 @@ public class Ship {
             }
         }
         //se pintan las balas
-        for (int i = 0; i < this.bullets.length; i++) {
-            if (this.bullets[i] != null) {
-                this.bullets[i].paint(s);
+        for (int i = 0; i < this.getBullets().length; i++) {
+            if (this.getBullets()[i] != null) {
+                this.getBullets()[i].paint(s);
             }
         }
     }
@@ -100,10 +107,10 @@ public class Ship {
         Bullet tempo;
         boolean shooted = false;
         //solo  dispara si tiene un disparo libre
-        for (int i = 0; i < this.bullets.length && !shooted; i++) {
-            if (this.bullets[i] == null) {
+        for (int i = 0; i < this.getBullets().length && !shooted; i++) {
+            if (this.getBullets()[i] == null) {
                 tempo = new Bullet(this.position.getX(), this.position.getY());
-                this.bullets[i] = tempo;
+                this.getBullets()[i] = tempo;
                 shooted = true;
             }
         }

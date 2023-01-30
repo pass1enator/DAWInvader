@@ -18,8 +18,7 @@ public class Enemy {
     private Point2D position;
     private TextColor color;
     private TextColor backgroundcolor;
-    private int width = 7;
-    private int height = 4;
+
     private static int bullets_size = 2;
     private Bullet[] bullets;
     //por la frecuencia
@@ -72,31 +71,49 @@ public class Enemy {
 
     public Enemy() {
         this.position = new Point2D();
-        this.init();
     }
 
     public Enemy(Point2D p) {
         this.position = p;
-        this.init();
-    }
+     }
 
     public Enemy(int x, int y) {
         this.position = new Point2D(x, y);
-        this.init();
     }
 
     public void initAnimationTime(int i) {
         this.animation = i;
     }
-    public void setEnemyType(EnemyType e){
-        this.enemytype=e;
+
+    public void setEnemyType(EnemyType e) {
+        this.enemytype = e;
     }
+
     public static int getMax_animation_cicle() {
         return max_animation_cicle;
     }
 
-    private void init() {
-        this.color = TextColor.ANSI.GREEN;
+    public void init() {
+
+        if (null != this.enemytype) {
+            switch (this.enemytype) {
+                case A:
+                    this.color = TextColor.ANSI.RED;
+                    break;
+                case B:
+                    this.color = TextColor.ANSI.BLUE;
+                    break;
+                case C:
+                    this.color = TextColor.ANSI.YELLOW;
+                    break;
+                case D:
+                    this.color = TextColor.ANSI.WHITE;
+                    break;
+                default:
+                    this.color = TextColor.ANSI.GREEN;
+            }
+
+        }
         this.backgroundcolor = TextColor.ANSI.BLACK;
         this.bullets = new Bullet[Enemy.bullets_size];
 
@@ -111,7 +128,7 @@ public class Enemy {
     }
 
     public void moveHorizontal(int intx, int min_x, int max_x) {
-        if (this.position.getX() + intx - this.width / 2 >= min_x && this.position.getX() + intx + this.width / 2 < max_x) {
+        if (this.position.getX() + intx - Enemy.cartoon[0].length / 2 >= min_x && this.position.getX() + intx + Enemy.cartoon[0].length / 2 < max_x) {
             this.position.addX(intx);
         } else {
             Toolkit.getDefaultToolkit().beep();
@@ -190,37 +207,6 @@ public class Enemy {
                 this.bullets[i].paint(s);
             }
         }
-    }
-
-    private void paintOne(Screen s) {
-
-        if (this.animate) {
-            s.setCharacter(this.position.getX() - 2, this.position.getY() - 1, new TextCharacter('/', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() - 1, this.position.getY() - 1, new TextCharacter('-', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX(), this.position.getY() - 1, new TextCharacter('-', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() + 1, this.position.getY() - 1, new TextCharacter('-', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() + 2, this.position.getY() - 1, new TextCharacter('\\', color, this.backgroundcolor));
-
-            s.setCharacter(this.position.getX() - 2, this.position.getY(), new TextCharacter(' ', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() - 1, this.position.getY(), new TextCharacter('/', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX(), this.position.getY(), new TextCharacter(' ', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() + 1, this.position.getY(), new TextCharacter('\\', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() + 2, this.position.getY(), new TextCharacter(' ', color, this.backgroundcolor));
-        } else {
-            s.setCharacter(this.position.getX() - 2, this.position.getY() - 1, new TextCharacter('\\', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() - 1, this.position.getY() - 1, new TextCharacter('_', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX(), this.position.getY() - 1, new TextCharacter('_', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() + 1, this.position.getY() - 1, new TextCharacter('_', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() + 2, this.position.getY() - 1, new TextCharacter('/', color, this.backgroundcolor));
-
-            s.setCharacter(this.position.getX() - 2, this.position.getY(), new TextCharacter(' ', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() - 1, this.position.getY(), new TextCharacter('\\', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX(), this.position.getY(), new TextCharacter(' ', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() + 1, this.position.getY(), new TextCharacter('/', color, this.backgroundcolor));
-            s.setCharacter(this.position.getX() + 2, this.position.getY(), new TextCharacter(' ', color, this.backgroundcolor));
-
-        }
-
     }
 
     public void shoot() {
