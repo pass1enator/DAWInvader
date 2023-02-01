@@ -19,7 +19,7 @@ public class Enemy {
     private TextColor color;
     private TextColor backgroundcolor;
 
-    private static int bullets_size = 2;
+    private static int bullets_size = 1;
     private Bullet[] bullets;
     //por la frecuencia
     private static int max_paint_counter = 35;
@@ -27,14 +27,21 @@ public class Enemy {
     private int paint_counter = 0;
     private int animation = 250;
     private boolean animate = false;
+    private float prob;
     private EnemyType enemytype;
 
+    /*+
+    tipos de enemigo
+     */
     public enum EnemyType {
         A,
         B,
         C,
         D
     }
+    /**
+     * matriz de dibujos
+     */
     private static String cartoon[][] = {
         {
             "⢀⡴⣿⢦⡀ ",
@@ -71,14 +78,19 @@ public class Enemy {
 
     public Enemy() {
         this.position = new Point2D();
+        this.prob = (float) Math.random() / 10000f;
     }
 
     public Enemy(Point2D p) {
         this.position = p;
-     }
+        this.prob = (float) Math.random() / 10000f;
+
+    }
 
     public Enemy(int x, int y) {
         this.position = new Point2D(x, y);
+        this.prob = (float) (Math.random() / 10000f);
+
     }
 
     public void initAnimationTime(int i) {
@@ -93,6 +105,17 @@ public class Enemy {
         return max_animation_cicle;
     }
 
+    public Bullet[] getBullets() {
+        return bullets;
+    }
+
+    public void setBullets(Bullet[] bullets) {
+        this.bullets = bullets;
+    }
+
+    /**
+     * Inicialización del objeto
+     */
     public void init() {
 
         if (null != this.enemytype) {
@@ -115,10 +138,17 @@ public class Enemy {
 
         }
         this.backgroundcolor = TextColor.ANSI.BLACK;
-        this.bullets = new Bullet[Enemy.bullets_size];
+        this.setBullets(new Bullet[Enemy.bullets_size]);
 
     }
 
+    /**
+     * Moverl el enemigo de forma vertical
+     *
+     * @param incy incremento en el eje y
+     * @param min_y margen superior
+     * @param max_y margen inferior
+     */
     public void moveVertical(int incy, int min_y, int max_y) {
         if (this.position.getY() + incy >= min_y && this.position.getY() + incy < max_y) {
             this.position.addY(incy);
@@ -127,6 +157,13 @@ public class Enemy {
         }
     }
 
+    /**
+     * mueve el elemnto en el eje x
+     *
+     * @param intx incremento o decremento
+     * @param min_x límite izquierdo
+     * @param max_x límite derecho
+     */
     public void moveHorizontal(int intx, int min_x, int max_x) {
         if (this.position.getX() + intx - Enemy.cartoon[0].length / 2 >= min_x && this.position.getX() + intx + Enemy.cartoon[0].length / 2 < max_x) {
             this.position.addX(intx);
@@ -135,18 +172,24 @@ public class Enemy {
         }
     }
 
+    /**
+     * vuelve las balas asociadas al enemigo
+     *
+     * @param min_y límite superior de la pantalla
+     * @param max_y límite inferior de la pantalla
+     */
     public void moveBullets(int min_y, int max_y) {
         this.paint_counter++;
 
         //para que se pueda ver el disparo
         if (this.paint_counter >= Enemy.max_paint_counter) {
             this.paint_counter = 0;
-            for (int i = 0; i < this.bullets.length; i++) {
-                if (this.bullets[i] != null) {
-                    this.bullets[i].moveVertical(-1, min_y, max_y);
+            for (int i = 0; i < this.getBullets().length; i++) {
+                if (this.getBullets()[i] != null) {
+                    this.getBullets()[i].moveVertical(1, min_y, max_y);
                     //en caso de llegar a la parte superior se elimina
-                    if (this.bullets[i].getPosition().getY() <= min_y) {
-                        this.bullets[i] = null;
+                    if (this.getBullets()[i].getPosition().getY() >= max_y) {
+                        this.getBullets()[i] = null;
                     }
                 }
             }
@@ -154,7 +197,7 @@ public class Enemy {
     }
 
     /**
-     * Dibuja ^ _/ \_ !#####!
+     * Dibuja al enemigo en funciónde los 4 tipos existentes
      *
      * @param s
      */
@@ -202,23 +245,48 @@ public class Enemy {
             }
         }
         this.animation++;
-        for (int i = 0; i < this.bullets.length; i++) {
-            if (this.bullets[i] != null) {
-                this.bullets[i].paint(s);
+        for (int i = 0; i < this.getBullets().length; i++) {
+            if (this.getBullets()[i] != null) {
+                this.getBullets()[i].paint(s);
             }
         }
     }
 
+    /**
+     * Dispara de forma aleatorio, en función del valor de probabilidad [0,1]
+     */
     public void shoot() {
         Bullet tempo;
         boolean shooted = false;
-        //solo  dispara si tiene un disparo libre
-        for (int i = 0; i < this.bullets.length && !shooted; i++) {
-            if (this.bullets[i] == null) {
-                tempo = new Bullet(this.position.getX(), this.position.getY() - 2);
-                this.bullets[i] = tempo;
-                shooted = true;
+        //solo se dispara si la probabilidad es menor
+        if (Math.random() < this.prob) {
+            //solo  dispara si tiene un disparo libre
+            for (int i = 0; i < this.getBullets().length && !shooted; i++) {
+                if (this.getBullets()[i] == null) {
+                    tempo = new Bullet(this.position.getX(), this.position.getY() + 2);
+                    this.getBullets()[i] = tempo;
+                    shooted = true;
+                }
             }
         }
     }
+
+    public boolean colision(Bullet b) {
+        int x, y;
+        if (b != null) {
+            //se encuentra en el eje x
+            if (this.position.getX() - this.cartoon[0].length / 2 <= b.getPosition().getX()
+                    && this.position.getX() + this.cartoon[0].length / 2 >= b.getPosition().getX()) {
+                //se encuentra en el eje y
+                if (this.position.getY() - this.cartoon.length / 2 < b.getPosition().getY() && this.position.getY() + this.cartoon.length / 2 > b.getPosition().getY()) {
+                    x = b.getPosition().getX() - (this.position.getX() - this.cartoon[0].length / 2);
+                    y = this.position.getY() - b.getPosition().getY();
+                    return true;
+
+                }
+            }
+        }
+        return false;
+    }
+
 }

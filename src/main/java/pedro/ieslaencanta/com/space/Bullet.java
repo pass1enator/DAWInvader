@@ -52,7 +52,7 @@ public class Bullet {
     }
 
     public void moveVertical(int incy, int min_y, int max_y) {
-        if (this.getPosition().getY() + incy >= min_y && this.getPosition().getY() + incy < max_y) {
+        if (this.getPosition().getY() + incy >= min_y && this.getPosition().getY() + incy <= max_y) {
             this.getPosition().addY(incy);
         } else {
             Toolkit.getDefaultToolkit().beep();

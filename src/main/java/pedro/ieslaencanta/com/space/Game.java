@@ -230,27 +230,117 @@ public class Game {
         if (this.key_right_pressed) {
             this.ship.moveHorizontal(1, 0, COLUMNS - 1);
         }
-        //se mueven las balas
+        //se mueven las balas de la nave
         this.ship.moveBullets(0, ROWS);
+        this.shoot_enemies();
+        this.move_enemies();
         //se dispara si se ha pulsado la tecla
         if (this.key_shoot) {
             this.ship.shoot();
         }
-        this.eval_colisions();
-        
+        this.eval_colisionsWallShipBullets();
+        this.eval_colisionsWallEnemisBullets();
+        this.eval_colisionEnemiesShipBullets();
+        this.eval_colisionShipEnemiesBullets();
+
     }
-    public boolean eval_colisions(){
-        for(int i=0;i<this.walls.length;i++){
-            for(int j=0;j<this.ship.getBullets().length;j++){
-                 if(this.walls[i].colision(this.ship.getBullets()[j]))
-                     this.ship.getBullets()[j]=null;
-                 
+
+    public boolean eval_colisionsWallShipBullets() {
+        //muro contra balas de nave
+        for (int i = 0; i < this.walls.length; i++) {
+            for (int j = 0; j < this.ship.getBullets().length; j++) {
+                if (this.walls[i].colision(this.ship.getBullets()[j])) {
+                    this.ship.getBullets()[j] = null;
+                }
+
             }
         }
         return true;
     }
-    public boolean isKey_left_pressed() {
-        return key_left_pressed;
+
+    public boolean eval_colisionEnemiesShipBullets() {
+        for (int i = 0; i < this.enemies.length; i++) {
+            for (int j = 0; j < this.enemies[i].length; j++) {
+                if (this.enemies[i][j] != null) {
+                    for (int k = 0; k < this.ship.getBullets().length; k++) {
+                        if (this.ship.getBullets()[k] != null && this.enemies[i][j].colision(this.ship.getBullets()[k])) {
+                            this.enemies[i][j] = null;
+                            this.ship.getBullets()[k] = null;
+                            return true;
+                        }
+                    }
+
+                }
+            }
+        }
+        return false;
+    }
+
+      public boolean eval_colisionShipEnemiesBullets() {
+        for (int i = 0; i < this.enemies.length; i++) {
+            for (int j = 0; j < this.enemies[i].length; j++) {
+                if (this.enemies[i][j] != null) {
+                    for (int k = 0; k < this.enemies[i][j].getBullets().length; k++) {
+                        if (this.enemies[i][j].getBullets()[k] != null 
+                                && this.ship.colision(this.enemies[i][j].getBullets()[k])) {
+                            //this.enemies[i][j] = null;
+                            this.enemies[i][j].getBullets()[k]= null;
+                            System.out.println("Colisión");
+                            return true;
+                        }
+                    }
+
+                }
+            }
+        }
+        return false;
+    }
+    
+    public boolean eval_colisionsWallEnemisBullets() {
+        //muro contra balas de enemigos
+        //se miran los muros
+        for (int i = 0; i < this.walls.length; i++) {
+            if (this.walls[i] != null) {
+                //se miran los enemigos
+                for (int j = 0; j < this.enemies.length; j++) {
+                    for (int k = 0; k < this.enemies[j].length; k++) {
+                        if (this.enemies[j][k] != null) {
+                            //se miran las balas
+                            for (int l = 0; l < this.enemies[j][k].getBullets().length; l++) {
+                                //se detecta la colision
+                                if (this.enemies[j][k].getBullets()[l] != null && this.walls[i].colision(this.enemies[j][k].getBullets()[l])) {
+                                    this.enemies[j][k].getBullets()[l] = null;
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public void shoot_enemies() {
+        for (int i = 0; i < this.enemies.length; i++) {
+            for (int j = 0; j < this.enemies[i].length; j++) {
+                if (this.enemies[i][j] != null) {
+                    this.enemies[i][j].shoot();
+                }
+            }
+        }
+    }
+
+    public void move_enemies() {
+        for (int i = 0; i < this.enemies.length; i++) {
+            for (int j = 0; j < this.enemies[i].length; j++) {
+                if (this.enemies[i][j] != null) {
+                    //se mueven las balas
+                    this.enemies[i][j].moveBullets(0, Game.ROWS);
+                }
+            }
+        }
     }
 
     public void setKey_left_pressed(boolean key_left_pressed) {

@@ -115,4 +115,26 @@ public class Ship {
             }
         }
     }
+    
+     public boolean colision(Bullet b) {
+        int x, y;
+        if (b != null) {
+            //se encuentra en el eje x
+            if (this.position.getX() - this.cartoon[0].length() / 2 <= b.getPosition().getX()
+                    && 
+                    this.position.getX() + this.cartoon[0].length() / 2 >= b.getPosition().getX()) {
+                //se encuentra en el eje y
+                if (this.position.getY() - this.cartoon[0].length() / 2 < b.getPosition().getY() && 
+                        this.position.getY() + this.cartoon[0].length() / 2 > b.getPosition().getY()) {
+                    x = b.getPosition().getX() - (this.position.getX() - this.cartoon[0].length() / 2);
+                    y = this.position.getY() - b.getPosition().getY();
+                    return true;
+
+                }
+            }
+        }
+        return false;
+    }
+    
+    
 }
