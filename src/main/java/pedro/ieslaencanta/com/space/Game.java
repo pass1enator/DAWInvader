@@ -26,11 +26,12 @@ public class Game {
     //dimensiones de un terminal
     private static int COLUMNS = 80;
     private static int ROWS = 24;
+    public static final  TextColor BACKGROUND = TextColor.RGB.Factory.fromString("#000000");
     //20 MHz
     private static int frecuency = 2;
     private Terminal terminal;
     private Screen screen;
-    private TextColor background;
+
     private boolean key_left_pressed;
     private boolean key_right_pressed;
     private boolean key_exit;
@@ -38,15 +39,23 @@ public class Game {
     private Ship ship;
     private Enemy enemies[][];
     private Wall walls[];
+    private int lifes = 3;
 
+    private enum STATES {
+        PLAY,
+        GAME_OVER
+    }
+    private STATES state;
+
+    /**
+     * Constructor por defecto
+     */
     public Game() {
         this.key_left_pressed = false;
         this.key_right_pressed = false;
         this.key_exit = false;
         this.key_shoot = false;
-        //se crea la nave
-        this.background = TextColor.ANSI.BLACK;
-        this.ship = new Ship(Game.COLUMNS / 2, ROWS - 3);
+
         this.init();
         try {
             this.terminal = new DefaultTerminalFactory().createTerminal();
@@ -58,9 +67,16 @@ public class Game {
         }
     }
 
-    public void init() {
+    private void init() {
+        this.state = STATES.PLAY;
+        this.initShip();
         this.initEnemies();
         this.initWalls();
+    }
+
+    private void initShip() {
+        this.ship = new Ship(Game.COLUMNS / 2, ROWS - 3);
+
     }
 
     private void initWalls() {
@@ -81,13 +97,14 @@ public class Game {
     }
 
     private void initEnemies() {
-        int incx = 9;
+        int incx = 12;
         int incy = 4;
-        int x = 10;
+        int x = 6;
         int y = 1;
         int aleatorio;
+        Enemy.HORIZONTAL_DIRECTION direction;
         Random PRNG = new Random();
-        this.enemies = new Enemy[4][8];
+        this.enemies = new Enemy[4][6];
         Enemy.EnemyType tipo_enemigo;
         Enemy.EnemyType[] enemytypes = Enemy.EnemyType.values();
         //se inicializan los enemigos
@@ -95,18 +112,27 @@ public class Game {
             //tipo de enemigo igual para toda la fila de forma aleatoria
             tipo_enemigo = enemytypes[PRNG.nextInt(enemytypes.length)];
             aleatorio = (int) (Math.random() * Enemy.getMax_animation_cicle());
+            //para la direccion se mueve igual toda la fila
+            direction = Enemy.HORIZONTAL_DIRECTION.values()[Math.random() < 0.5d ? 0 : 1];
+
             for (int j = 0; j < this.enemies[i].length; j++) {
                 this.enemies[i][j] = new Enemy(new Point2D(x + j * incx, y));
                 this.enemies[i][j].setEnemyType(tipo_enemigo);
                 this.enemies[i][j].init();
                 this.enemies[i][j].initAnimationTime(aleatorio);
+                this.enemies[i][j].setHorizontaDirection(direction);
             }
             y = y + incy;
 
         }
     }
 
+    /**
+     * inicializar el juego mientra no se pulse la tecla escape
+     */
     public void loop() {
+        int counter = 0;
+        int refresh = 100;
         try {
             screen.startScreen();
             screen.clear();
@@ -118,6 +144,7 @@ public class Game {
                     this.process_input();
                     //se actualiza el juego
                     this.update();
+
                     //se pinta
                     this.paint(this.screen);
                     //1000 es un segundo, frecuenca de 10 Hz son 10 veces por segundo
@@ -132,6 +159,17 @@ public class Game {
         } catch (IOException ex) {
             Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void paintLifes(Screen s) {
+        int x = Game.COLUMNS - 3;
+        int y = 23;
+        for (int i = 0; i < this.lifes; i++) {
+            s.setCharacter(x,
+                    y, TextCharacter.fromCharacter(com.googlecode.lanterna.Symbols.HEART)[0].withForegroundColor(TextColor.ANSI.RED).withBackgroundColor(Game.BACKGROUND));
+            x -= 2;
+        }
+
     }
 
     private void paintEnemies(Screen s) {
@@ -162,17 +200,54 @@ public class Game {
                     s.setCharacter(column, row, new TextCharacter(
                             ' ',
                             TextColor.ANSI.DEFAULT,
-                            this.background));
+                            BACKGROUND));
 
                 }
             }
-            this.paintEnemies(s);
-            this.paintWalls(s);
-            this.ship.paint(s);
+            if (this.state == STATES.PLAY) {
+                this.paintEnemies(s);
+                this.paintWalls(s);
+                this.ship.paint(s);
+                this.paintLifes(s);
+            } else if (this.state == STATES.GAME_OVER) {
+                this.paintGameOver(s);
+            }
             screen.refresh();
         } catch (IOException ex) {
             Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void paintGameOver(Screen s) {
+        //https://emojicombos.com/game-over-ascii-art
+        //Game.BACKGROUND=TextColor.ANSI.BLACK;
+        String game_over[] = {
+            "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⡀⠀",
+            "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⣤⠀⠀⠀⢀⣴⣿⡶⠀⣾⣿⣿⡿⠟⠛⠁",
+            "⠀⠀⠀⠀⠀⠀⣀⣀⣄⣀⠀⠀⠀⠀⣶⣶⣦⠀⠀⠀⠀⣼⣿⣿⡇⠀⣠⣿⣿⣿⠇⣸⣿⣿⣧⣤⠀⠀⠀",
+            "⠀⠀⢀⣴⣾⣿⡿⠿⠿⠿⠇⠀⠀⣸⣿⣿⣿⡆⠀⠀⢰⣿⣿⣿⣷⣼⣿⣿⣿⡿⢀⣿⣿⡿⠟⠛⠁⠀⠀",
+            "⠀⣴⣿⡿⠋⠁⠀⠀⠀⠀⠀⠀⢠⣿⣿⣹⣿⣿⣿⣿⣿⣿⡏⢻⣿⣿⢿⣿⣿⠃⣼⣿⣯⣤⣴⣶⣿⡤⠀",
+            "⣼⣿⠏⠀⣀⣠⣤⣶⣾⣷⠄⣰⣿⣿⡿⠿⠻⣿⣯⣸⣿⡿⠀⠀⠀⠁⣾⣿⡏⢠⣿⣿⠿⠛⠋⠉⠀⠀⠀",
+            "⣿⣿⠲⢿⣿⣿⣿⣿⡿⠋⢰⣿⣿⠋⠀⠀⠀⢻⣿⣿⣿⠇⠀⠀⠀⠀⠙⠛⠀⠀⠉⠁⠀⠀⠀⠀⠀⠀⠀",
+            "⠹⢿⣷⣶⣿⣿⠿⠋⠀⠀⠈⠙⠃⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+            "⠀⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣴⣶⣦⣤⡀⠀",
+            "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⠀⠀⠀⠀⣠⡇⢰⣶⣶⣾⡿⠷⣿⣿⣿⡟⠛⣉⣿⣿⣿⠆",
+            "⠀⠀⠀⠀⠀⠀⢀⣤⣶⣿⣿⡎⣿⣿⣦⠀⠀⠀⢀⣤⣾⠟⢀⣿⣿⡟⣁⠀⠀⣸⣿⣿⣤⣾⣿⡿⠛⠁⠀",
+            "⠀⠀⠀⠀⣠⣾⣿⡿⠛⠉⢿⣦⠘⣿⣿⡆⠀⢠⣾⣿⠋⠀⣼⣿⣿⣿⠿⠷⢠⣿⣿⣿⠿⢻⣿⣧⠀⠀⠀",
+            "⠀⠀⠀⣴⣿⣿⠋⠀⠀⠀⢸⣿⣇⢹⣿⣷⣰⣿⣿⠃⠀⢠⣿⣿⢃⣀⣤⣤⣾⣿⡟⠀⠀⠀⢻⣿⣆⠀⠀",
+            "⠀⠀⠀⣿⣿⡇⠀⠀⢀⣴⣿⣿⡟⠀⣿⣿⣿⣿⠃⠀⠀⣾⣿⣿⡿⠿⠛⢛⣿⡟⠀⠀⠀⠀⠀⠻⠿⠀⠀",
+            "⠀⠀⠀⠹⣿⣿⣶⣾⣿⣿⣿⠟⠁⠀⠸⢿⣿⠇⠀⠀⠀⠛⠛⠁⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+            "⠀⠀⠀⠀⠈⠙⠛⠛⠛⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"};
+        for (int i = 0; i < game_over.length; i++) {
+            for (int j = 0; j < game_over[i].length(); j++) {
+                s.setCharacter(j + 20,
+                        i + 4, TextCharacter.fromCharacter(
+                                game_over[i].charAt(j)
+                        )[0].withForegroundColor(TextColor.ANSI.values()[(int) (Math.random() * TextColor.ANSI.values().length)]));
+            }
+
+        }
+
     }
 
     /**
@@ -224,28 +299,35 @@ public class Game {
     }
 
     private void update() {
-        if (this.key_left_pressed) {
-            this.ship.moveHorizontal(-1, 0, COLUMNS - 1);
+        if (this.state == STATES.PLAY) {
+            if (this.key_left_pressed) {
+                this.ship.moveHorizontal(-1, 0, COLUMNS - 1);
+            }
+            if (this.key_right_pressed) {
+                this.ship.moveHorizontal(1, 0, COLUMNS - 1);
+            }
+            //se mueven las balas de la nave
+            this.ship.moveBullets(0, ROWS);
+            this.shoot_enemies();
+            this.move_enemies();
+            //se dispara si se ha pulsado la tecla
+            if (this.key_shoot) {
+                this.ship.shoot();
+            }
+            this.eval_colisionsWallShipBullets();
+            this.eval_colisionsWallEnemisBullets();
+            this.eval_colisionEnemiesShipBullets();
+            if (this.eval_colisionShipEnemiesBullets()) {
+                this.lifes--;
+                this.ship.setXPosition(COLUMNS / 2);
+                if (this.lifes <= 0) {
+                    this.state = STATES.GAME_OVER;
+                }
+            }
         }
-        if (this.key_right_pressed) {
-            this.ship.moveHorizontal(1, 0, COLUMNS - 1);
-        }
-        //se mueven las balas de la nave
-        this.ship.moveBullets(0, ROWS);
-        this.shoot_enemies();
-        this.move_enemies();
-        //se dispara si se ha pulsado la tecla
-        if (this.key_shoot) {
-            this.ship.shoot();
-        }
-        this.eval_colisionsWallShipBullets();
-        this.eval_colisionsWallEnemisBullets();
-        this.eval_colisionEnemiesShipBullets();
-        this.eval_colisionShipEnemiesBullets();
-
     }
 
-    public boolean eval_colisionsWallShipBullets() {
+    private boolean eval_colisionsWallShipBullets() {
         //muro contra balas de nave
         for (int i = 0; i < this.walls.length; i++) {
             for (int j = 0; j < this.ship.getBullets().length; j++) {
@@ -258,7 +340,7 @@ public class Game {
         return true;
     }
 
-    public boolean eval_colisionEnemiesShipBullets() {
+    private boolean eval_colisionEnemiesShipBullets() {
         for (int i = 0; i < this.enemies.length; i++) {
             for (int j = 0; j < this.enemies[i].length; j++) {
                 if (this.enemies[i][j] != null) {
@@ -276,16 +358,15 @@ public class Game {
         return false;
     }
 
-      public boolean eval_colisionShipEnemiesBullets() {
+    private boolean eval_colisionShipEnemiesBullets() {
         for (int i = 0; i < this.enemies.length; i++) {
             for (int j = 0; j < this.enemies[i].length; j++) {
                 if (this.enemies[i][j] != null) {
                     for (int k = 0; k < this.enemies[i][j].getBullets().length; k++) {
-                        if (this.enemies[i][j].getBullets()[k] != null 
+                        if (this.enemies[i][j].getBullets()[k] != null
                                 && this.ship.colision(this.enemies[i][j].getBullets()[k])) {
                             //this.enemies[i][j] = null;
-                            this.enemies[i][j].getBullets()[k]= null;
-                            System.out.println("Colisión");
+                            this.enemies[i][j].getBullets()[k] = null;
                             return true;
                         }
                     }
@@ -295,8 +376,8 @@ public class Game {
         }
         return false;
     }
-    
-    public boolean eval_colisionsWallEnemisBullets() {
+
+    private boolean eval_colisionsWallEnemisBullets() {
         //muro contra balas de enemigos
         //se miran los muros
         for (int i = 0; i < this.walls.length; i++) {
@@ -322,7 +403,7 @@ public class Game {
         return true;
     }
 
-    public void shoot_enemies() {
+    private void shoot_enemies() {
         for (int i = 0; i < this.enemies.length; i++) {
             for (int j = 0; j < this.enemies[i].length; j++) {
                 if (this.enemies[i][j] != null) {
@@ -332,26 +413,34 @@ public class Game {
         }
     }
 
-    public void move_enemies() {
+    private void move_enemies() {
+        double aleatorio;
         for (int i = 0; i < this.enemies.length; i++) {
+            aleatorio = Math.random();
             for (int j = 0; j < this.enemies[i].length; j++) {
-                if (this.enemies[i][j] != null) {
-                    //se mueven las balas
+                if (this.enemies[i][j] != null) {//se mueve la fila
+                    if (aleatorio < 0.01) {
+
+                        this.enemies[i][j].moveHorizontal(0, Game.COLUMNS);
+                        //se mueven las balas
+                    }
                     this.enemies[i][j].moveBullets(0, Game.ROWS);
+
                 }
+
             }
         }
     }
 
-    public void setKey_left_pressed(boolean key_left_pressed) {
+    private void setKey_left_pressed(boolean key_left_pressed) {
         this.key_left_pressed = key_left_pressed;
     }
 
-    public boolean isKey_right_pressed() {
+    private boolean isKey_right_pressed() {
         return key_right_pressed;
     }
 
-    public void setKey_right_pressed(boolean key_right_pressed) {
+    private void setKey_right_pressed(boolean key_right_pressed) {
         this.key_right_pressed = key_right_pressed;
     }
 

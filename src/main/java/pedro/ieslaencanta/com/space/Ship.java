@@ -24,21 +24,31 @@ public class Ship {
     //por la frecuencia
     private static int max_paint_counter = 35;
     private int paint_counter = 0;
+    private static char bullet_symbol=com.googlecode.lanterna.Symbols.ARROW_UP;
     private String cartoon[] = {
         "⢀⣀⣾⣿⣷⣀⡀",
         "⣿⣿⣿⣿⣿⣿⣿"
     };
-
+    /**
+     * constructor por defecto
+     */
     public Ship() {
         this.position = new Point2D();
         this.init();
     }
-
+    /**
+     * constructor sobrecargado
+     * @param p posición del la nave
+     */
     public Ship(Point2D p) {
         this.position = p;
         this.init();
     }
-
+    /**
+     * construtor sobrecargado con la posición de nave
+     * @param x
+     * @param y 
+     */
     public Ship(int x, int y) {
         this.position = new Point2D(x, y);
         this.init();
@@ -46,19 +56,24 @@ public class Ship {
 
     private void init() {
         this.color = TextColor.ANSI.GREEN;
-        this.backgroundcolor = TextColor.ANSI.BLACK;
-        this.setBullets(new Bullet[Ship.bullets_size]);
-
-    }
-
+        this.backgroundcolor = Game.BACKGROUND; //TextColor.ANSI.BLACK;
+        this.bullets=(new Bullet[Ship.bullets_size]);
+     }
+    /**
+     * devuelve las balas de la nave
+     * @return 
+     */
     public Bullet[] getBullets() {
         return bullets;
     }
 
-    public void setBullets(Bullet[] bullets) {
-        this.bullets = bullets;
-    }
-
+    
+    /**
+     * muevel a nave incrementado intx
+     * @param intx incremento, positivo o negativo
+     * @param min_x menor valor posible de x
+     * @param max_x mayor valor posible de x 
+     */
     public void moveHorizontal(int intx, int min_x, int max_x) {
         if (this.position.getX() + intx - this.cartoon[0].length() / 2 >= min_x && this.position.getX() + intx + this.cartoon[0].length() / 2 <= max_x) {
             this.position.addX(intx);
@@ -66,7 +81,13 @@ public class Ship {
             Toolkit.getDefaultToolkit().beep();
         }
     }
-
+    /**
+     * Coloca la nave en la posicoin x (centrado)
+     * @param x 
+     */
+    public void setXPosition(int x){
+        this.position.setX(x-this.cartoon.length/2);
+    }
     public void moveBullets(int min_y, int max_y) {
         this.paint_counter++;
         //para que se pueda ver el disparo
@@ -84,7 +105,10 @@ public class Ship {
             }
         }
     }
-
+    /**
+     * pinta la nave y las balas asociadas
+     * @param s 
+     */
     public void paint(Screen s) {
         //se pinta la matriz
         for (int i = 0; i < this.cartoon.length; i++) {
@@ -102,7 +126,9 @@ public class Ship {
             }
         }
     }
-
+    /**
+     * dispara una bala si tiene disponible
+     */
     public void shoot() {
         Bullet tempo;
         boolean shooted = false;
@@ -110,12 +136,17 @@ public class Ship {
         for (int i = 0; i < this.getBullets().length && !shooted; i++) {
             if (this.getBullets()[i] == null) {
                 tempo = new Bullet(this.position.getX(), this.position.getY());
+                tempo.setCharacter(Ship.bullet_symbol);
                 this.getBullets()[i] = tempo;
                 shooted = true;
             }
         }
     }
-    
+    /**
+     * detecta colisiones con una bala,
+     * @param b bala a evaluar
+     * @return cierto si colisiona, falso sino.
+     */
      public boolean colision(Bullet b) {
         int x, y;
         if (b != null) {

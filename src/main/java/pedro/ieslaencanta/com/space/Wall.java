@@ -24,17 +24,26 @@ public class Wall {
     private static int max_paint_counter = 35;
     private int paint_counter = 0;
     private StringBuilder cartoon[];
-
+    /**
+     * constructor
+     */
     public Wall() {
         this.position = new Point2D();
         this.init();
     }
-
+    /**
+     * construtor sobrecargado con la coordenada
+     * @param p 
+     */
     public Wall(Point2D p) {
         this.position = p;
         this.init();
     }
-
+    /**
+     * constructor sobrecargado
+     * @param x
+     * @param y 
+     */
     public Wall(int x, int y) {
         this.position = new Point2D(x, y);
         this.init();
@@ -42,14 +51,19 @@ public class Wall {
 
     private void init() {
         this.color = TextColor.ANSI.MAGENTA;
-        this.backgroundcolor = TextColor.ANSI.BLACK;
+        this.backgroundcolor = Game.BACKGROUND; //TextColor.ANSI.BLACK;
         this.cartoon = new StringBuilder[2];
         this.cartoon[0] = new StringBuilder("⣿⣿⣿⣿⣿⣿⣿");
         this.cartoon[1] = new StringBuilder("⣿⣿⣿⣿⣿⣿⣿");
         this.hardness = this.cartoon.length * 2;
 
     }
-
+    /**
+     * detecta colision con las balas, en caso de detectarse, se destruye 
+     * el lugar en el que colisiona
+     * @param b bala a evaluar
+     * @return 
+     */
     public boolean colision(Bullet b) {
         int x, y;
         if (b != null) {
@@ -57,14 +71,15 @@ public class Wall {
             if (this.position.getX() - this.cartoon[0].length() / 2 <= b.getPosition().getX()
                     && this.position.getX() + this.cartoon[0].length() / 2 >= b.getPosition().getX()) {
                 //se encuentra en el eje y
-                if (this.position.getY() - this.cartoon.length / 2 < b.getPosition().getY() && this.position.getY() + this.cartoon.length / 2 > b.getPosition().getY()) {
+                if (this.position.getY() <= b.getPosition().getY() && this.position.getY() + this.cartoon.length > b.getPosition().getY()) {
+                    //ahora se tiene que obtener la posicion
                     x = b.getPosition().getX() - (this.position.getX() - this.cartoon[0].length() / 2);
                     y = this.position.getY() - b.getPosition().getY();
-                    if (y == 0 && this.cartoon[1].charAt(x) != ' ') {
-                        this.cartoon[1].setCharAt(x, ' ');
-                        return true;
-                    } else if (this.cartoon[0].charAt(x) != ' ') {
+                    if (y == 0 && this.cartoon[0].charAt(x) != ' ') {
                         this.cartoon[0].setCharAt(x, ' ');
+                        return true;
+                    } else if (this.cartoon[1].charAt(x) != ' ') {
+                        this.cartoon[1].setCharAt(x, ' ');
                         return true;
                     }
 
@@ -73,7 +88,10 @@ public class Wall {
         }
         return false;
     }
-
+    /**
+     * pinta el muro
+     * @param s 
+     */
     public void paint(Screen s) {
         //se pinta la matriz
         for (int i = 0; i < this.cartoon.length; i++) {
@@ -83,6 +101,7 @@ public class Wall {
                         new TextCharacter(this.cartoon[i].charAt(j + this.cartoon[i].length() / 2),
                                 color, this.backgroundcolor));
             }
+            //   this.backgroundcolor=TextColor.ANSI.BLUE;
         }
 
     }
