@@ -12,3 +12,6 @@ Crear el juego SpaceInvader con la librería Lanterna.
 
 
 4. Añadir animaciones a los enemigos.     
+
+El diagrama de clases simplificado:
+![alt text](https://github.com/pass1enator/DAWInvader/blob/master/Main.png)
