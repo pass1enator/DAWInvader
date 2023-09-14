@@ -9,9 +9,7 @@ Crear el juego SpaceInvader con la librería Lanterna.
    - Ship: Se mueve de forma horizontal, contiene una lista de balas, se encarga de la gestión de las mismas, además ha de comprobar que las balas de los enemigos no colisionan con esta.
    - Wall: Entre la nave y los enemigos, cada vez que una bala alcanza una defensa, esta se destruye en la parte que ha colisionado.
    - Enemy: Similar a la nave, puede disparar balas, estas pueden impactar en las defensas y en la nave. Los enemigos disparan de forma aleatoria y se mueven por filas, cada fila de enemigos se mueve a una velocidad diferente. Se tiene al menos 3 filas de enemigos de 4 enemigos por fila cada uno. Opcionalmente se pueden tener diferentes diseños cada enemigo.
-
-
-4. Añadir animaciones a los enemigos.     
+3 . Añadir animaciones a los enemigos.     
 
 El diagrama de clases simplificado:
 ![alt text](https://github.com/pass1enator/DAWInvader/blob/master/Main.png)
